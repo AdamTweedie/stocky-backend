@@ -1,9 +1,3 @@
-#STOCKY
-##Background
-
-
-
-
 The key separation of concerns:
 
 `services/` — only talks to external APIs, returns raw/cleaned data. Knows nothing about your DB.
