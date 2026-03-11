@@ -9,6 +9,9 @@ from .stocks import (
     delete_stock,
     get_stocks_table_size,
     bulk_insert_stocks,
+    reset_free_tier,
+    bulk_update_stock_prices,
+    get_stocks_by_search,
 )
 
 from .news import (

@@ -1,7 +1,19 @@
-from jobs import run_refresh_stocks
-from db import get_all_stocks, create_tables, get_stocks_table_size
+import jobs
+import db
 
 
 
 if __name__ == "__main__":
-    print(get_stocks_table_size())
+
+    jobs.update_stock_prices()
+
+    active = db.get_active_short_names()
+
+    stocks = []
+    for astock in active:
+        stock = db.get_stock_by_short_name(astock)
+        stocks.append(stock)
+
+    for stock in stocks:
+        print(stock)
+    

@@ -139,6 +139,32 @@ def update_stock(short_name: str, **fields) -> bool:
         return cursor.rowcount > 0
     
 
+def reset_free_tier() -> None:
+    """Set in_free_tier = False for all stocks."""
+    with get_connection() as conn:
+        conn.execute("UPDATE stocks SET in_free_tier = 0")
+        conn.commit()
+
+
+def bulk_update_stock_prices(updates: list[dict]) -> int:
+    """
+    Update prices for many stocks in a single transaction.
+    updates = [{"short_name": "AAPL", "price": 257.46, "price_change": -2.83, "price_change_percent": -1.08}]
+    Returns number of rows updated.
+    """
+    with get_connection() as conn:
+        count = 0
+        for u in updates:
+            cursor = conn.execute("""
+                    UPDATE stocks
+                    SET price = ?, price_change = ?, price_change_percent = ?
+                    WHERE short_name = ?
+                    """, (u["price"], u["price_change"], u["price_change_percent"], u["short_name"]))
+            count += cursor.rowcount
+        conn.commit()
+    return count
+
+
 # -------------- DELETE ----------------
 def delete_stock(short_name: str) -> bool:
     """Delete an stock by shortName. Returns True if an stock was deleted."""
