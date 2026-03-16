@@ -65,5 +65,6 @@ from .user_follows import (
     get_followed_industries,
     get_user_feed_filters,
     get_active_short_names,
+    get_popular_stocks
 )
 

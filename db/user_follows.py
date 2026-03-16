@@ -64,6 +64,22 @@ def reorder_stocks(user_id: int, ordered_short_names: list[str]) -> bool:
             """, (position, user_id, short_name))
         conn.commit()
         return True
+    
+
+def get_popular_stocks(limit: int = 10) -> list[dict]:
+    """
+    Returns the most followed stocks across all users, with full stock details.
+    """
+    with get_connection() as conn:
+        rows = conn.execute("""
+            SELECT s.*, COUNT(uf.user_id) as follower_count
+            FROM user_stocks uf
+            JOIN stocks s ON uf.short_name = s.short_name
+            GROUP BY uf.short_name
+            ORDER BY follower_count DESC
+            LIMIT ?
+        """, (limit,)).fetchall()
+        return [dict(row) for row in rows]
 
 # ─────────────────────────────────────────
 # USER INDUSTRIES

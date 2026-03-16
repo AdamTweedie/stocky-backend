@@ -1,19 +1,24 @@
-import jobs
-import db
+# main.py
+from fastapi import FastAPI
+from fastapi.middleware.cors import CORSMiddleware
+from routes.stocks import router as stocks_router
+# from routes.news import router as news_router
+# from routes.users import router as users_router
+import uvicorn
 
+app = FastAPI()
 
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"],
+    allow_methods=["*"],
+    allow_headers=["*"],
+    allow_credentials=True,
+)
+
+app.include_router(stocks_router)
+# app.include_router(news_router)
+# app.include_router(users_router)
 
 if __name__ == "__main__":
-
-    jobs.update_stock_prices()
-
-    active = db.get_active_short_names()
-
-    stocks = []
-    for astock in active:
-        stock = db.get_stock_by_short_name(astock)
-        stocks.append(stock)
-
-    for stock in stocks:
-        print(stock)
-    
+    uvicorn.run("main:app", host="127.0.0.1", port=5000, reload=True)
