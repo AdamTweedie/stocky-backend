@@ -3,3 +3,7 @@ from .refresh_stocks import (
     update_free_stocks,
     update_stock_prices,
 )
+
+from .refresh_news import (
+    run_refresh_news
+)
