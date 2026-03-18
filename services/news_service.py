@@ -15,6 +15,7 @@ def get_gn_news_by_symbol(name: str, lang: str = 'en', max: int = 5) -> list[dic
         response.raise_for_status()
         
         data = response.json()
+                  
         return data
 
     except requests.exceptions.RequestException as e:
