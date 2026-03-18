@@ -45,7 +45,7 @@ def get_popular_stocks():
 
 @router.get("/free", response_model=StockListResponse)
 def get_free_stocks():
-    raw = get_stocks_by_filter(in_free_tier=True)
+    raw = get_stocks_by_filter(inFreeTier=True)
     return StockListResponse(results=[db_to_stock(s) for s in raw])
 
 
