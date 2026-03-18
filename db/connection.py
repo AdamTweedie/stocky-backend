@@ -31,10 +31,16 @@ def create_tables():
                 id                   INTEGER PRIMARY KEY AUTOINCREMENT,
                 created_at           TEXT NOT NULL DEFAULT (strftime('%Y-%m-%dT%H:%M:%fZ', 'now')),
                 short_name           TEXT NOT NULL,
-                publisher            TEXT NOT NULL,
-                title                TEXT NOT NULL,
+                source               TEXT NOT NULL,
+                source_url           TEXT,
+                source_country       TEXT,
+                source_type          TEXT NOT NULL,
+                lang                 TEXT,
                 publish_time         TEXT NOT NULL,
-                web_link             TEXT NOT NULL,
+                url                  TEXT NOT NULL,
+                image                TEXT,
+                title                TEXT NOT NULL,
+                description          TEXT,
                 sentiment            TEXT,
                 AI_summary           TEXT
             )
@@ -104,6 +110,3 @@ def create_tables():
 
         conn.commit()
 
-
-if __name__ == "__main__":
-    create_tables()

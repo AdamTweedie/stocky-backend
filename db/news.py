@@ -5,11 +5,17 @@ from typing import Optional
 # ------------ INSERT --------------
 def insert_news(
     short_name: str,
-    publisher: str,
+    source: str,
+    source_type: str,
+    publish_time: str,
+    url: str,
     title: str,
-    publish_time: str = None,
-    web_link: str = None,
-    sentiment: float = None,
+    source_url: str = None,
+    source_country: str = None,
+    lang: str = None,
+    image: str = None,
+    description: str = None,
+    sentiment: str = None,
     ai_summary: str = None,
 ) -> int | None:
     """Insert a news item. Returns the new row's id, or None if title already exists."""
@@ -19,12 +25,16 @@ def insert_news(
             return None
 
         cursor = conn.execute("""
-            INSERT INTO news (short_name, publisher, title, publish_time, web_link, sentiment, ai_summary)
-            VALUES (?, ?, ?, ?, ?, ?, ?)
-        """, (short_name, publisher, title, publish_time, web_link, sentiment, ai_summary))
+            INSERT INTO news (
+                short_name, source, source_url, source_country, source_type,
+                lang, publish_time, url, image, title, description, sentiment, ai_summary
+            )
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+        """, (short_name, source, source_url, source_country, source_type,
+              lang, publish_time, url, image, title, description, sentiment, ai_summary))
         conn.commit()
         return cursor.lastrowid
-    
+
 
 # ----------- GET --------------
 def get_all_news(limit: int = 100) -> list[dict]:
@@ -64,6 +74,16 @@ def get_news_by_recency(limit: int = 10) -> list[dict]:
         return [dict(row) for row in rows]
 
 
+def get_news_by_source_type(source_type: str, limit: int = 50) -> list[dict]:
+    """Fetch news filtered by source type e.g. 'api' or 'rss'."""
+    with get_connection() as conn:
+        rows = conn.execute(
+            "SELECT * FROM news WHERE source_type = ? ORDER BY publish_time DESC LIMIT ?",
+            (source_type, limit)
+        ).fetchall()
+        return [dict(row) for row in rows]
+
+
 def get_news_by_sentiment(ascending: bool = False, limit: int = 50) -> list[dict]:
     """
     Fetch news ordered by sentiment score.
@@ -77,7 +97,7 @@ def get_news_by_sentiment(ascending: bool = False, limit: int = 50) -> list[dict
             (limit,)
         ).fetchall()
         return [dict(row) for row in rows]
-    
+
 
 # ----------- UPDATE --------------
 def update_news_by_id(news_id: int, **fields) -> bool:
@@ -126,9 +146,6 @@ def update_sentiment_by_short_name(short_name: str, sentiment: str) -> int:
     """
     Bulk update sentiment for all news items belonging to a symbol.
     Returns the number of rows updated.
-
-    Usage:
-        update_sentiment_by_short_name("BTC", "0.7")
     """
     with get_connection() as conn:
         cursor = conn.execute(
@@ -136,15 +153,12 @@ def update_sentiment_by_short_name(short_name: str, sentiment: str) -> int:
         )
         conn.commit()
         return cursor.rowcount
-    
+
 
 def update_ai_summary_by_short_name(short_name: str, ai_summary: str) -> int:
     """
     Bulk update AI summary for all news items belonging to a symbol.
     Returns the number of rows updated.
-
-    Usage:
-        update_ai_summary_by_short_name("BTC", "This is a summary of recent news about BTC...")
     """
     with get_connection() as conn:
         cursor = conn.execute(
@@ -169,4 +183,3 @@ def delete_news_older_than(cutoff_date: str) -> int:
         )
         conn.commit()
         return cursor.rowcount
-    
