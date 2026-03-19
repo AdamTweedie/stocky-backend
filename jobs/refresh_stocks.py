@@ -8,6 +8,7 @@ from db import (
     bulk_insert_stocks
 )
 from concurrent.futures import ThreadPoolExecutor, as_completed
+import time
 
 
 def run_refresh_stocks():
@@ -58,6 +59,8 @@ def update_stock_prices() -> dict:
             return short_name, None
         return short_name, price_dict
     
+
+    # TODO: if using alpha v free tier, drop workers to 1, and sleep 1 second between call
     with ThreadPoolExecutor(max_workers=5) as executor:
         futures = {executor.submit(fetch, s): s for s in active}
         for future in as_completed(futures):

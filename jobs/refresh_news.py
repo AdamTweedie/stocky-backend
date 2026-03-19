@@ -1,4 +1,4 @@
-from services import get_gn_news_by_symbol
+from services import get_gn_news_by_symbol, get_sentiment
 from db import insert_news, get_active_short_names
 
 
@@ -10,6 +10,9 @@ def run_refresh_news():
         data = get_gn_news_by_symbol(stock_symbol)
         if data is not None:
             for article in data['articles']:
+                sentT = get_sentiment(article['title'])
+                sentD = get_sentiment(article['description'])
+                sentAvg = (sentT + sentD) / 2
                 result = insert_news(
                     short_name=stock_symbol,
                     source=article['source']['name'],
@@ -22,7 +25,7 @@ def run_refresh_news():
                     lang=article['lang'],
                     image=article['image'],
                     description=article['description'],
-                    sentiment=None,
+                    sentiment=sentAvg,
                     ai_summary=None
                 )
                 if result is None:

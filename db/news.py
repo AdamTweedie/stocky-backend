@@ -15,7 +15,7 @@ def insert_news(
     lang: str = None,
     image: str = None,
     description: str = None,
-    sentiment: str = None,
+    sentiment: float = None,
     ai_summary: str = None,
 ) -> int | None:
     """Insert a news item. Returns the new row's id, or None if title already exists."""
@@ -93,7 +93,7 @@ def get_news_by_sentiment(ascending: bool = False, limit: int = 50) -> list[dict
     order = "ASC" if ascending else "DESC"
     with get_connection() as conn:
         rows = conn.execute(
-            f"SELECT * FROM news WHERE sentiment IS NOT NULL ORDER BY CAST(sentiment AS REAL) {order} LIMIT ?",
+            f"SELECT * FROM news WHERE sentiment IS NOT NULL ORDER BY sentiment {order} LIMIT ?",
             (limit,)
         ).fetchall()
         return [dict(row) for row in rows]
@@ -105,7 +105,7 @@ def update_news_by_id(news_id: int, **fields) -> bool:
     Update any fields on a news item by id.
 
     Usage:
-        update_news_by_id(1, sentiment="0.8", ai_summary="...")
+        update_news_by_id(1, sentiment=0.8, ai_summary="...")
     """
     if not fields:
         return False
@@ -126,7 +126,7 @@ def update_news_by_title(title: str, **fields) -> bool:
     Update any fields on a news item by title.
 
     Usage:
-        update_news_by_title("Bitcoin hits 100k", sentiment="0.9", ai_summary="...")
+        update_news_by_title("Bitcoin hits 100k", sentiment=0.9, ai_summary="...")
     """
     if not fields:
         return False
@@ -142,7 +142,7 @@ def update_news_by_title(title: str, **fields) -> bool:
         return cursor.rowcount > 0
 
 
-def update_sentiment_by_short_name(short_name: str, sentiment: str) -> int:
+def update_sentiment_by_short_name(short_name: str, sentiment: float) -> int:
     """
     Bulk update sentiment for all news items belonging to a symbol.
     Returns the number of rows updated.

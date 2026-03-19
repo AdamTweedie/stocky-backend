@@ -41,7 +41,7 @@ def create_tables():
                 image                TEXT,
                 title                TEXT NOT NULL,
                 description          TEXT,
-                sentiment            TEXT,
+                sentiment            REAL,
                 AI_summary           TEXT
             )
         """)
