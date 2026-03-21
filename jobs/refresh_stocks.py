@@ -49,31 +49,33 @@ def update_stock_prices() -> dict:
     Updates the stock prices of the active symbols
     """
     updates, failed = [], []
+    delay = 0
 
     active = get_active_short_names()
     print(f"[update_stock_prices] Updating {len(active)} symbols...")
 
-    def fetch(short_name):
+    for i, short_name in enumerate(active):
+        if delay > 0: 
+            time.sleep(delay)
+        
         price_dict = get_stock_price_av(symbol=short_name)
-        if price_dict is None:
-            return short_name, None
-        return short_name, price_dict
-    
 
-    # TODO: if using alpha v free tier, drop workers to 1, and sleep 1 second between call
-    with ThreadPoolExecutor(max_workers=5) as executor:
-        futures = {executor.submit(fetch, s): s for s in active}
-        for future in as_completed(futures):
-            short_name, price_dict = future.result()
-            if price_dict is None:
-                failed.append(short_name)
-            else:
-                updates.append({
-                    "short_name": short_name,
-                    "price": price_dict["p"],
-                    "price_change": price_dict["pc"],
-                    "price_change_percent": price_dict["pcp"]
-                })
+        if price_dict == "REDUCE_RATE_TO_1_PER_SECOND":
+            print("[update_stock_prices] Free tier detected, switching to 1 request/sec")
+            delay = 1
+            time.sleep(delay)
+            price_dict = get_stock_price_av(symbol=short_name)
+        
+
+        if price_dict is None:
+            failed.append(short_name)
+        else:
+            updates.append({
+                "short_name": short_name,
+                "price": price_dict["p"],
+                "price_change": price_dict["pc"],
+                "price_change_percent": price_dict["pcp"]
+            })
 
     updated = bulk_update_stock_prices(updates)
 
