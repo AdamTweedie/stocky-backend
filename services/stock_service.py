@@ -29,11 +29,13 @@ def get_instruments() -> list[dict] | None:
         data = response.json()
 
         ALLOWED_TYPES = {"STOCK", "ETF"}
+        
         stocks = [
             {
                 "shortName": item["shortName"],
                 "name": item["name"],
-                "type": item["type"]
+                "type": item["type"],
+                "currencyCode": item["currencyCode"]
             }
             for item in data if item["type"] in ALLOWED_TYPES
         ]
@@ -54,6 +56,13 @@ def get_instruments() -> list[dict] | None:
         return None
     
 
+def is_rate_limited(data):
+    if "Information" not in data:
+        return False
+    if "1 request per second" in data["Information"]:
+        return True
+
+
 def get_stock_price_av(symbol):
     key = config.get_alpha_vantage_key()
     url = f"https://www.alphavantage.co/query?function=GLOBAL_QUOTE&symbol={symbol}&apikey={key}"
@@ -64,8 +73,9 @@ def get_stock_price_av(symbol):
         data = response.json()
 
         # handle missing key or rate limit response
-        if "Note" in data or "Information" in data:
-            return "FREE_TIER_RATE_BLOCK"
+        if is_rate_limited(data):
+            print(f"[get_stock_price_av] Alpha Vantage free tier detected - reduce API call to 1 per second")
+            return "REDUCE_RATE_TO_1_PER_SECOND"
         if "Global Quote" not in data:
             print(f"[get_stock_price_av] Unexpected response for {symbol}: {data}")
             return None
