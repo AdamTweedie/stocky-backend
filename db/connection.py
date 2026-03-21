@@ -17,6 +17,7 @@ def create_tables():
                 created_at            TEXT NOT NULL DEFAULT (strftime('%Y-%m-%dT%H:%M:%fZ', 'now')),
                 short_name            TEXT NOT NULL,
                 name                  TEXT NOT NULL,
+                currency_code         TEXT NOT NULL,
                 type                  TEXT NOT NULL,
                 industry              TEXT,
                 price                 REAL,

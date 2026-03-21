@@ -7,6 +7,7 @@ def insert_stock(
     shortName: str,
     name: str,
     type: str,
+    currencyCode: float,
     price: float = None,
     priceChange: float = None,
     priceChangePercent: float = None,
@@ -21,9 +22,9 @@ def insert_stock(
             return None
 
         cursor = conn.execute("""
-            INSERT INTO stocks (short_name, name, type, price, price_change, price_change_percent, in_free_tier, in_use)
-            VALUES (?, ?, ?, ?, ?, ?, ?, ?)
-        """, (shortName, name, type, price, priceChange, priceChangePercent, int(inFreeTier), int(inUse)))
+            INSERT INTO stocks (short_name, name, type, currency_code, price, price_change, price_change_percent, in_free_tier, in_use)
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
+        """, (shortName, name, type, currencyCode, price, priceChange, priceChangePercent, int(inFreeTier), int(inUse)))
         conn.commit()
         return cursor.lastrowid
     
@@ -38,9 +39,9 @@ def bulk_insert_stocks(stocks: list[dict]) -> int:
             ).fetchone()
             if not existing:
                 conn.execute("""
-                    INSERT INTO stocks (short_name, name, type)
-                    VALUES (?, ?, ?)
-                """, (stock["shortName"], stock["name"], stock["type"]))
+                    INSERT INTO stocks (short_name, name, type, currency_code)
+                    VALUES (?, ?, ?, ?)
+                """, (stock["shortName"], stock["name"], stock["type"], stock["currencyCode"]))
                 count += 1
         conn.commit()  # one single commit at the end
     return count
