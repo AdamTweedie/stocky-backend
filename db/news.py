@@ -53,13 +53,20 @@ def get_all_news(limit: int = 100) -> list[dict]:
         return [dict(row) for row in rows]
 
 
-def get_news_by_short_name(short_name: str, limit: int = 50) -> list[dict]:
-    """Fetch all news for a given symbol, most recent first."""
+def get_news_by_short_name(short_name: str, limit: int = 50, since: str = None) -> list[dict]:
     with get_connection() as conn:
-        rows = conn.execute(
-            "SELECT * FROM news WHERE short_name = ? ORDER BY publish_time DESC LIMIT ?",
-            (short_name, limit)
-        ).fetchall()
+        if since:
+            rows = conn.execute("""
+                SELECT * FROM news 
+                WHERE short_name = ? AND publish_time > ?
+                ORDER BY publish_time DESC LIMIT ?
+            """, (short_name, since, limit)).fetchall()
+        else:
+            rows = conn.execute("""
+                SELECT * FROM news 
+                WHERE short_name = ? 
+                ORDER BY publish_time DESC LIMIT ?
+            """, (short_name, limit)).fetchall()
         return [dict(row) for row in rows]
 
 
@@ -107,7 +114,7 @@ def get_news_by_sentiment(ascending: bool = False, limit: int = 50) -> list[dict
     
 
 # ----------- QUERY --------------
-def is_duplicate_news(title: str, threshold: int = 85) -> bool:
+def is_duplicate_news(title: str, threshold: int = 75) -> bool:
     """
     Check if a similar article already exists in the db.
     Returns True if a title with similarity above threshold is found.
