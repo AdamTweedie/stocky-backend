@@ -7,3 +7,7 @@ from .refresh_stocks import (
 from .refresh_news import (
     run_refresh_news
 )
+
+from .aggregate_sentiment import (
+    run_aggregate_sentiment
+)

@@ -47,6 +47,20 @@ def create_tables():
             )
         """)
         conn.execute("""
+            CREATE TABLE IF NOT EXISTS stock_sentiment_history (
+                id           INTEGER PRIMARY KEY AUTOINCREMENT,
+                created_at   TEXT NOT NULL DEFAULT (strftime('%Y-%m-%dT%H:%M:%fZ', 'now')),
+                short_name   TEXT NOT NULL,
+                date         TEXT NOT NULL,                   
+                avg_sentiment     REAL,                        
+                article_count     INTEGER,                     
+                positive_count    INTEGER,                     
+                negative_count    INTEGER,                     
+                neutral_count     INTEGER,                     
+                UNIQUE(short_name, date
+            )                     
+        """)
+        conn.execute("""
             CREATE TABLE IF NOT EXISTS users (
             id                    INTEGER PRIMARY KEY AUTOINCREMENT,
             created_at            TEXT NOT NULL DEFAULT (strftime('%Y-%m-%dT%H:%M:%fZ', 'now')),
