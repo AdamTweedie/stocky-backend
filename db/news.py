@@ -1,5 +1,6 @@
 from .connection import get_connection
 from typing import Optional
+from rapidfuzz import fuzz
 
 
 # ------------ INSERT --------------
@@ -22,6 +23,12 @@ def insert_news(
     with get_connection() as conn:
         existing = conn.execute("SELECT id FROM news WHERE title = ?", (title,)).fetchone()
         if existing:
+            print(f"[insert_news] Exact duplicate detected, skipping: {title}")
+            return None
+        
+        # fuzzy duplicate check
+        if is_duplicate_news(title):
+            print(f"[insert_news] Fuzzy duplicate detected, skipping: {title}")
             return None
 
         cursor = conn.execute("""
@@ -97,6 +104,27 @@ def get_news_by_sentiment(ascending: bool = False, limit: int = 50) -> list[dict
             (limit,)
         ).fetchall()
         return [dict(row) for row in rows]
+    
+
+# ----------- QUERY --------------
+def is_duplicate_news(title: str, threshold: int = 85) -> bool:
+    """
+    Check if a similar article already exists in the db.
+    Returns True if a title with similarity above threshold is found.
+    """
+    with get_connection() as conn:
+        # only check recent articles to keep it fast
+        rows = conn.execute("""
+            SELECT title FROM news 
+            WHERE created_at >= datetime('now', '-7 days')
+        """).fetchall()
+
+        for row in rows:
+            similarity = fuzz.ratio(title.lower(), row["title"].lower())
+            if similarity >= threshold:
+                return True
+
+    return False
 
 
 # ----------- UPDATE --------------
