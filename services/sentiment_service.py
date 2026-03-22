@@ -7,4 +7,4 @@ def get_sentiment(text: str) -> float:
     if scores['compound'] is None:
         return 0
     else:
-        return scores['compound'] # returns -1.0 (negative) to 1.0 (positive)
+        return round(scores['compound'], 3) # returns -1.0 (negative) to 1.0 (positive)
