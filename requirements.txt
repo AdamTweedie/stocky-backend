@@ -5,3 +5,5 @@ requests
 bcrypt
 vaderSentiment
 dotenv
+rapidfuzz
+feedparser
