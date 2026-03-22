@@ -22,13 +22,14 @@ def insert_news(
     """Insert a news item. Returns the new row's id, or None if title already exists."""
     with get_connection() as conn:
         existing = conn.execute("SELECT id FROM news WHERE title = ?", (title,)).fetchone()
+
         if existing:
-            print(f"[insert_news] Exact duplicate detected, skipping: {title}")
+            #print(f"[insert_news] Exact duplicate detected, skipping: {title}")
             return None
         
         # fuzzy duplicate check
         if is_duplicate_news(title):
-            print(f"[insert_news] Fuzzy duplicate detected, skipping: {title}")
+            #print(f"[insert_news] Fuzzy duplicate detected, skipping: {title}")
             return None
 
         cursor = conn.execute("""

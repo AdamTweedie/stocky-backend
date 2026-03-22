@@ -5,10 +5,12 @@ from db import (
     reset_free_tier, 
     get_active_short_names,
     bulk_update_stock_prices,
-    bulk_insert_stocks
+    bulk_insert_stocks,
+    get_stock_by_short_name
 )
 from concurrent.futures import ThreadPoolExecutor, as_completed
 import time
+from market_hours import is_market_open
 
 
 def run_refresh_stocks():
@@ -54,9 +56,14 @@ def update_stock_prices() -> dict:
     active = get_active_short_names()
     print(f"[update_stock_prices] Updating {len(active)} symbols...")
 
-    for i, short_name in enumerate(active):
+    for _, short_name in enumerate(active):
         if delay > 0: 
             time.sleep(delay)
+
+        stock = get_stock_by_short_name(short_name)
+        if not is_market_open(stock["currency_code"]):
+            print(f"[update_stock_prices] Market closed for {short_name}, skipping price update")
+            continue
         
         price_dict = get_stock_price_av(symbol=short_name)
 

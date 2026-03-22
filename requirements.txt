@@ -7,3 +7,5 @@ vaderSentiment
 dotenv
 rapidfuzz
 feedparser
+apscheduler
+pytz

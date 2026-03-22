@@ -57,7 +57,7 @@ def create_tables():
                 positive_count    INTEGER,                     
                 negative_count    INTEGER,                     
                 neutral_count     INTEGER,                     
-                UNIQUE(short_name, date
+                UNIQUE(short_name, date)
             )                     
         """)
         conn.execute("""
