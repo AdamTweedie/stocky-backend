@@ -10,6 +10,7 @@ router = APIRouter(prefix="/stocks")
 class StockResponse(BaseModel):
     symbol: str
     name: Optional[str] = None
+    currencyCode: Optional[str] = None
     type: Optional[str] = None
     industry: Optional[str] = None
     price: Optional[float] = None
@@ -27,6 +28,7 @@ def db_to_stock(item: dict) -> StockResponse:
     return StockResponse(
         symbol=item["short_name"],
         name=item["name"],
+        currencyCode=item["currency_code"],
         type=item["type"],
         industry=item["industry"],
         price=item["price"],
