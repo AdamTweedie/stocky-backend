@@ -9,3 +9,4 @@ rapidfuzz
 feedparser
 apscheduler
 pytz
+openai
