@@ -1,5 +1,5 @@
 from config import get_deepseek_key
-from db import update_news_by_id, get_news_by_short_name
+from db import update_news_by_id, get_news_by_short_name, get_news_by_id
 from datetime import datetime, timezone, timedelta
 from openai import OpenAI
 
@@ -29,6 +29,9 @@ def summarise_article(
     Updates the news row in the db with the summary.
     Returns summary text and token usage, or None if it fails.
     """
+    if get_news_by_id(news_id)["AI_summary"] is not None:
+        print(f"[summarise_article] AI_summary already exists for news id {news_id}")
+        return None
     if not title or not description:
         print(f"[summarise_article] No title or description provided for news_id {news_id}")
         return None
@@ -100,11 +103,11 @@ def summarise_recent_news(short_name: str, days: int = 3) -> dict | None:
     ])
 
     user_prompt = f"""Stock: {short_name}
-Here are the last {days} days of news articles:
+    Here are the last {days} days of news articles:
 
-{digest}
+    {digest}
 
-Please provide a 2 paragraph summary of the overall news sentiment and key themes for {short_name} over this period."""
+    Please provide a 4 paragraph summary of the overall news sentiment and key themes for {short_name} over this period."""
 
     try:
         response = client.chat.completions.create(
