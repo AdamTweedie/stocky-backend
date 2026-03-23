@@ -30,6 +30,42 @@ def aggregate_daily_sentiment(date: str = None) -> int:
         """, (date, date))
         conn.commit()
         return cursor.rowcount
+    
+    
+def aggregate_all_missing_sentiment() -> dict:
+    """
+    Aggregate sentiment for all dates that exist in the news table
+    but have no entry in stock_sentiment_history.
+    Useful for backfilling historical data.
+    Returns a summary of dates processed.
+    """
+    with get_connection() as conn:
+        # find all distinct dates in news that are not in stock_sentiment_history
+        missing_dates = conn.execute("""
+            SELECT DISTINCT date(publish_time) as date
+            FROM news
+            WHERE sentiment IS NOT NULL
+            AND date(publish_time) NOT IN (
+                SELECT DISTINCT date FROM stock_sentiment_history
+            )
+            ORDER BY date ASC
+        """).fetchall()
+
+    if not missing_dates:
+        print("[aggregate_all_missing_sentiment] No missing dates found")
+        return {"dates_processed": 0, "total_stocks": 0}
+
+    dates = [row["date"] for row in missing_dates]
+    print(f"[aggregate_all_missing_sentiment] Found {len(dates)} missing dates: {dates}")
+
+    total_stocks = 0
+    for date in dates:
+        count = aggregate_daily_sentiment(date)
+        total_stocks += count
+        print(f"[aggregate_all_missing_sentiment] {date} → {count} stocks aggregated")
+
+    print(f"[aggregate_all_missing_sentiment] ✅ Done — {len(dates)} dates, {total_stocks} total rows inserted")
+    return {"dates_processed": len(dates), "total_stocks": total_stocks}
 
 
 def get_sentiment_history(short_name: str, days: int = 30) -> list[dict]:

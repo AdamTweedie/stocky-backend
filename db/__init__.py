@@ -18,6 +18,7 @@ from .aggregate_sentiment import (
     aggregate_daily_sentiment,
     get_sentiment_history,
     get_sentiment_history_range,
+    aggregate_all_missing_sentiment,
 )
 
 from .news import (
