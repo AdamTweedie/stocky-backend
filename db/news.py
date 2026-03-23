@@ -114,6 +114,15 @@ def get_news_by_sentiment(ascending: bool = False, limit: int = 50) -> list[dict
         return [dict(row) for row in rows]
     
 
+def get_news_by_id(id: int) -> Optional[dict]:
+    """Fetch a single news item by ID."""
+    with get_connection() as conn:
+        row = conn.execute(
+            "SELECT * FROM news WHERE id = ?", (id,)
+        ).fetchone()
+        return dict(row) if row else None
+
+    
 # ----------- QUERY --------------
 def is_duplicate_news(title: str, threshold: int = 75) -> bool:
     """

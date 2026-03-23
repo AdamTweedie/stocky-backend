@@ -32,7 +32,8 @@ from .news import (
     update_news_by_title,
     update_ai_summary_by_short_name,
     delete_news_older_than,
-    get_news_by_source_type
+    get_news_by_source_type,
+    get_news_by_id,
 )
 
 from .users import (
