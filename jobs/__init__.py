@@ -11,3 +11,5 @@ from .refresh_news import (
 from .aggregate_sentiment import (
     run_aggregate_sentiment
 )
+
+from .update_ai_summary import update_ai_summary
