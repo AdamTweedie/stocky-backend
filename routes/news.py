@@ -1,12 +1,12 @@
 # routes/stocks.py
-from fastapi import APIRouter, Query
+from fastapi import APIRouter, Query, Depends
 from pydantic import BaseModel
 from typing import List, Optional
 from db import get_news_by_short_name, get_news_by_id
 from services import summarise_article
+from jobs import update_ai_summary
 
 router = APIRouter(prefix="/news")
-
 
 class NewsResponse(BaseModel):
     # NOT NULL in db - always present
@@ -76,9 +76,17 @@ def get_ai_summary_by_news_id(
         if curr_summary is not None:
             news.append(article)
         else:
-            _,_,_,_ = summarise_article(id, news["short_name"], news["url"], news["title"])
-            article = get_news_by_id(id)
-            news.append(article)
+            if update_ai_summary(
+                news_id = article["id"],
+                stock_short_name=article["short_name"],
+                news_url=article["url"],
+                news_description=article["description"]
+            ) is not None:
+                article = get_news_by_id(id)
+                news.append(article)
+            else:
+                #TODO: should handle error?
+                continue
 
             
     return NewsListResponse(results=news)

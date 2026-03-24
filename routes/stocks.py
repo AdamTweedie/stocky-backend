@@ -1,5 +1,5 @@
 # routes/stocks.py
-from fastapi import APIRouter, Query
+from fastapi import APIRouter, Query, Depends
 from pydantic import BaseModel
 from typing import List, Optional
 from db import get_stocks_by_search, get_stock_by_short_name, get_stocks_by_filter, get_popular_stocks
