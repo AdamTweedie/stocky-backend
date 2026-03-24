@@ -60,9 +60,6 @@ def summarise_article(
         tokens_in = response.usage.prompt_tokens
         tokens_out = response.usage.completion_tokens
 
-        # update the news row in the db
-        update_news_by_id(news_id, ai_summary=summary)
-
         print(f"[summarise_article] {short_name} | news_id {news_id} | tokens in: {tokens_in} out: {tokens_out}")
 
         return {
@@ -83,6 +80,7 @@ def summarise_recent_news(short_name: str, days: int = 3) -> dict | None:
     This is a premium feature — check tier before calling.
     Returns the summary and total token usage.
     """
+    
     articles = get_news_by_short_name(short_name, limit=50)
 
     # filter to last N days
