@@ -2,7 +2,8 @@
 from fastapi import APIRouter, Query
 from pydantic import BaseModel
 from typing import List, Optional
-from db import get_news_by_short_name
+from db import get_news_by_short_name, get_news_by_id
+from services import summarise_article
 
 router = APIRouter(prefix="/news")
 
@@ -59,5 +60,26 @@ def get_news_by_symbol(
         items = get_news_by_short_name(short_name=sym, since=since)
         for item in items:
             news.append(db_to_news(item))
+    return NewsListResponse(results=news)
+
+
+@router.get("/ai_summary", response_model=NewsListResponse)
+def get_ai_summary_by_news_id(
+    q: str = Query(...)):
+
+    ids = [int(i.strip()) for i in q.split(",")]
+
+    news = []
+    for id in ids:
+        article = get_news_by_id(id)
+        curr_summary = article["AI_summary"]
+        if curr_summary is not None:
+            news.append(article)
+        else:
+            _,_,_,_ = summarise_article(id, news["short_name"], news["url"], news["title"])
+            article = get_news_by_id(id)
+            news.append(article)
+
+            
     return NewsListResponse(results=news)
 

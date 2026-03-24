@@ -1,3 +1,4 @@
+# db/users.py
 import secrets
 from datetime import datetime, timezone, timedelta
 from typing import Optional
@@ -82,6 +83,19 @@ def login_email(email: str, password: str) -> Optional[str]:
         """, (token, expires, _now(), user["id"]))
         conn.commit()
         return token
+    
+
+def login_google(user_id: int)-> str:
+    """Issue a session token for a Google OAuth user."""
+    token = secrets.token_urlsafe(32)
+    expires = (datetime.now(timezone.utc) + timedelta(days=30)).isoformat()
+    with get_connection() as conn:
+        conn.execute("""
+            UPDATE users SET session_token = ?, session_expires_at = ?, last_login_at = ?
+            WHERE id = ?
+        """, (token, expires, _now(), user_id))
+        conn.commit()
+    return token
 
 
 def get_user_by_session(session_token: str) -> Optional[dict]:
