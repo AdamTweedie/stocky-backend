@@ -40,9 +40,15 @@ def db_to_stock(item: dict) -> StockResponse:
 
 
 @router.get("/popular", response_model=StockListResponse)
-def get_popular_stocks():
-    raw = get_popular_stocks()
-    return StockListResponse(results=[db_to_stock(s) for s in raw])
+def get_popular_stocks_route():
+    free = get_stocks_by_filter(in_free_tier=True)
+    popular = get_popular_stocks()
+
+    # combine, with free stocks first, avoiding duplicates
+    free_symbols = {s["short_name"] for s in free}
+    combined = free + [s for s in popular if s["short_name"] not in free_symbols]
+
+    return StockListResponse(results=[db_to_stock(s) for s in combined])
 
 
 @router.get("/free", response_model=StockListResponse)
