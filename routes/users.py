@@ -18,6 +18,7 @@ from db import (
     update_subscription,
     cancel_subscription,
     get_user_feed_filters,
+    get_stock_by_short_name,
 )
 from dependencies import get_current_active_user
 import bcrypt
@@ -159,9 +160,22 @@ def add_to_watchlist(
     if not short_name:
         raise HTTPException(status_code=400, detail="short_name is required")
 
+    # check stock exists
+    stock = get_stock_by_short_name(short_name)
+    if not stock:
+        raise HTTPException(status_code=404, detail="Stock not found")
+
+    # free tier users can only follow free stocks
+    if user["tier"] == "free" and not stock["in_free_tier"]:
+        raise HTTPException(
+            status_code=403,
+            detail="Upgrade to pro to follow this stock"
+        )
+
     result = follow_stock(user["id"], short_name)
     if not result:
         raise HTTPException(status_code=409, detail="Stock already in watchlist")
+
     return {"ok": True}
 
 
