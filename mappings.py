@@ -1,6 +1,23 @@
 import pytz 
 from datetime import datetime
 
+CURRENCY_EXCHANGE_SUFFIX = {
+    "USD": "",       # US stocks need no suffix
+    "GBP": ".L",     # London Stock Exchange
+    "GBX": ".L",     # London Stock Exchange (pence)
+    "EUR": ".AS",    # default EUR to Euronext Amsterdam
+    "CHF": ".SW",    # Swiss Exchange
+    "SEK": ".ST",    # Stockholm
+    "NOK": ".OL",    # Oslo
+    "DKK": ".CO",    # Copenhagen
+    "CAD": ".TO",    # Toronto
+}
+
+
+def currency_exchange_suffix(curr: str) -> str:
+    return CURRENCY_EXCHANGE_SUFFIX.get(curr, "")
+
+
 CURRENCY_EXCHANGE_HOURS = {
     # North America
     "USD": {

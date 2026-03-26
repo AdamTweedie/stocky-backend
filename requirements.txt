@@ -10,3 +10,4 @@ feedparser
 apscheduler
 pytz
 openai
+yfinance

@@ -2,6 +2,9 @@ from .refresh_stocks import (
     run_refresh_stocks, 
     update_free_stocks,
     update_stock_prices,
+    update_single_stock_price,
+    get_or_fetch_quote,
+    fetch_price_with_fallback
 )
 
 from .refresh_news import (

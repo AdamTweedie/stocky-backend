@@ -12,6 +12,7 @@ from .stocks import (
     reset_free_tier,
     bulk_update_stock_prices,
     get_stocks_by_search,
+    get_quote_by_symbol,
 )
 
 from .aggregate_sentiment import (

@@ -89,21 +89,17 @@ def get_stocks_by_filter(
         return [dict(row) for row in rows]
     
 
-def get_stocks_by_search(query: str) -> list[dict]:
-    """
-    Return all stocks whose short_name or name starts with the query string.
-    Case-insensitive.
-
-    Usage:
-        search_stocks("app") → returns Apple, APP, etc.
-    """
+def get_stocks_by_search(query: str, limit: int = 25) -> list[dict]:
     pattern = f"{query}%"
     with get_connection() as conn:
         rows = conn.execute("""
             SELECT * FROM stocks
             WHERE short_name LIKE ? OR name LIKE ?
-            ORDER BY short_name ASC
-        """, (pattern, pattern)).fetchall()
+            ORDER BY
+                CASE WHEN short_name LIKE ? THEN 0 ELSE 1 END,
+                short_name ASC
+            LIMIT ?
+        """, (pattern, pattern, pattern, limit)).fetchall()
         return [dict(row) for row in rows]
 
 
@@ -112,6 +108,17 @@ def get_stocks_table_size() -> int:
     with get_connection() as conn:
         row = conn.execute("SELECT COUNT(*) AS count FROM stocks").fetchone()
         return row["count"] if row else 0
+    
+
+def get_quote_by_symbol(symbol: str) -> Optional[dict]:
+    """Fetch a single stock quote by symbol (short_name)."""
+    with get_connection() as conn:
+        row = conn.execute("""
+            SELECT short_name, price, price_change, price_change_percent, currency_code
+            FROM stocks
+            WHERE short_name = ?
+        """, (symbol,)).fetchone()
+        return dict(row) if row else None
     
 
 # -------------- UPDATE ----------------

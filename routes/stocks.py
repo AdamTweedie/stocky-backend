@@ -2,7 +2,14 @@
 from fastapi import APIRouter, Query, Depends
 from pydantic import BaseModel
 from typing import List, Optional
-from db import get_stocks_by_search, get_stock_by_short_name, get_stocks_by_filter, get_popular_stocks
+from db import (get_stocks_by_search, 
+                get_stock_by_short_name,
+                get_stocks_by_filter,
+                get_popular_stocks, 
+                get_quote_by_symbol
+                )
+from jobs import update_single_stock_price, get_or_fetch_quote
+
 
 router = APIRouter(prefix="/stocks")
 
@@ -20,8 +27,20 @@ class StockResponse(BaseModel):
     inUse: Optional[bool] = None
 
 
+class QuoteResponse(BaseModel):
+    symbol: str
+    price: Optional[float] = None
+    change: Optional[float] = None
+    changePercent: Optional[float] = None
+    currencyCode: Optional[str] = None
+
+
 class StockListResponse(BaseModel):
     results: List[StockResponse]
+
+
+class QuoteListResponse(BaseModel):
+    results: List[QuoteResponse]
 
 
 def db_to_stock(item: dict) -> StockResponse:
@@ -41,7 +60,7 @@ def db_to_stock(item: dict) -> StockResponse:
 
 @router.get("/popular", response_model=StockListResponse)
 def get_popular_stocks_route():
-    free = get_stocks_by_filter(in_free_tier=True)
+    free = get_stocks_by_filter(inFreeTier=True)
     popular = get_popular_stocks()
 
     # combine, with free stocks first, avoiding duplicates
@@ -63,15 +82,23 @@ def search_stocks(q: str = Query(..., min_length=1)):
     return StockListResponse(results=[db_to_stock(s) for s in raw])
 
 
-@router.get("/quotes", response_model=StockListResponse)
+@router.get("/quotes", response_model=QuoteListResponse)
 def get_quotes(q: str = Query(...)):
     symbols = [s.strip() for s in q.split(",")]
-    stocks = []
+    quotes = []
+
     for sym in symbols:
-        item = get_stock_by_short_name(sym)
+        item = get_or_fetch_quote(sym)
         if item:
-            stocks.append(db_to_stock(item))
+            quotes.append(QuoteResponse(
+                symbol=item["short_name"],
+                price=item["price"],
+                change=item["price_change"],
+                changePercent=item["price_change_percent"],
+                currencyCode=item["currency_code"]
+            ))
         else:
-            stocks.append(StockResponse(symbol=sym))
-    return StockListResponse(results=stocks)
+            quotes.append(QuoteResponse(symbol=sym, price=None, change=None, changePercent=None, currencyCode=None))
+
+    return QuoteListResponse(results=quotes)
 
