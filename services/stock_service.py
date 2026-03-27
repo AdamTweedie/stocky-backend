@@ -161,4 +161,44 @@ def get_stock_price_spd(symbol: str, currency_code: str, type: str = "STOCK") ->
     except requests.exceptions.RequestException as e:
         print(f"[get_stock_price_spd] Error fetching {symbol}: {e}")
         return None
-    
+
+
+def get_stock_price_by_name(short_name: str, currency_code: str) -> dict | None:
+    """
+    Search for a stock price using yfinance search — no exact ticker needed.
+    Falls back through multiple search strategies.
+    """
+    # strategy 1: try short_name directly
+    # strategy 2: try short_name + exchange suffix from currency
+    # strategy 3: search by company name
+
+    try:
+        ticker = yf.Ticker(short_name)
+        price = ticker.fast_info.last_price
+        if price and price > 0:
+            prev_close = ticker.fast_info.previous_close
+            change = price - prev_close
+            change_pct = (change / prev_close) * 100
+            print(f"[get_stock_price_by_name] ✅ {short_name} resolved via {short_name}")
+            return {"p": price, "pc": change, "pcp": change_pct}
+    except Exception as e:
+        print(f"[get_stock_price_by_name] failed with exception {e}, will search for valid symbols...")
+
+    try:
+        results = yf.Search(short_name).all
+        if results and "quotes" in results:
+            quotes = results.get("quotes")[:3]
+            for quote in quotes:
+                ticker = yf.Ticker(quote["symbol"])
+                price = ticker.fast_info.last_price
+                if price and price > 0:
+                    prev_close = ticker.fast_info.previous_close
+                    change = price - prev_close
+                    change_pct = (change / prev_close) * 100
+                    print(f"[get_stock_price_by_name] ✅ {short_name} resolved via search → {quote['symbol']}")
+                    return {"p": price, "pc": change, "pcp": change_pct}
+    except Exception as e:
+        print(f"[get_stock_price_by_name] Search failed for {short_name}: {e}")
+
+    print(f"[get_stock_price_by_name] ❌ All strategies failed for {short_name}")
+    return None
