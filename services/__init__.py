@@ -1,4 +1,4 @@
-from .stock_service import get_instruments, get_stock_price_av, get_stock_price_yf, get_stock_price_spd, get_stock_price_by_name
+from .stock_service import get_instruments, get_stock_price_av, get_stock_price_yf, get_stock_price_spd
 
 from .news_service import get_gn_news_by_symbol, fetch_rss_news
 

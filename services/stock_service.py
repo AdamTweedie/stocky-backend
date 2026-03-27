@@ -107,29 +107,6 @@ def get_stock_price_av(symbol: str, currency_code: str) -> dict | None:
     except requests.exceptions.RequestException as e:
         print(f"[get_stock_price_av] Error fetching {symbol}: {e}")
         return None
-
-    
-def get_stock_price_yf(symbol: str, currency_code: str, type: str = "STOCK") -> dict | None:
-    """Fetch stock price from yfinance as fallback."""
-    symbol = _build_ticker(symbol, currency_code)
-
-    try:
-        ticker = yf.Ticker(symbol)
-        info = ticker.fast_info
-        price = info.last_price
-        prev_close = info.previous_close
-
-        if not price or not prev_close:
-            print(f"[get_stock_price_yf] Empty response for {symbol}")
-            return None
-
-        change = price - prev_close
-        change_percent = (change / prev_close) * 100
-        return {"p": price, "pc": change, "pcp": change_percent}
-
-    except Exception as e:
-        print(f"[get_stock_price_yf] Error fetching {symbol}: {e}")
-        return None
     
 
 def get_stock_price_spd(symbol: str, currency_code: str, type: str = "STOCK") -> dict | None:
@@ -163,7 +140,7 @@ def get_stock_price_spd(symbol: str, currency_code: str, type: str = "STOCK") ->
         return None
 
 
-def get_stock_price_by_name(short_name: str, currency_code: str) -> dict | None:
+def get_stock_price_yf(symbol: str, currency_code: str, type: str = "STOCK") -> dict | None:
     """
     Search for a stock price using yfinance search — no exact ticker needed.
     Falls back through multiple search strategies.
@@ -173,19 +150,19 @@ def get_stock_price_by_name(short_name: str, currency_code: str) -> dict | None:
     # strategy 3: search by company name
 
     try:
-        ticker = yf.Ticker(short_name)
+        ticker = yf.Ticker(symbol)
         price = ticker.fast_info.last_price
         if price and price > 0:
             prev_close = ticker.fast_info.previous_close
             change = price - prev_close
             change_pct = (change / prev_close) * 100
-            print(f"[get_stock_price_by_name] ✅ {short_name} resolved via {short_name}")
+            print(f"[get_stock_price_by_name] ✅ {symbol} resolved via {symbol}")
             return {"p": price, "pc": change, "pcp": change_pct}
     except Exception as e:
         print(f"[get_stock_price_by_name] failed with exception {e}, will search for valid symbols...")
 
     try:
-        results = yf.Search(short_name).all
+        results = yf.Search(symbol).all
         if results and "quotes" in results:
             quotes = results.get("quotes")[:3]
             for quote in quotes:
@@ -194,11 +171,11 @@ def get_stock_price_by_name(short_name: str, currency_code: str) -> dict | None:
                 if price and price > 0:
                     prev_close = ticker.fast_info.previous_close
                     change = price - prev_close
-                    change_pct = (change / prev_close) * 100
-                    print(f"[get_stock_price_by_name] ✅ {short_name} resolved via search → {quote['symbol']}")
+                    change_pct = round((change / prev_close) * 100, 3)
+                    print(f"[get_stock_price_by_name] ✅ {symbol} resolved via search → {quote['symbol']}")
                     return {"p": price, "pc": change, "pcp": change_pct}
     except Exception as e:
-        print(f"[get_stock_price_by_name] Search failed for {short_name}: {e}")
+        print(f"[get_stock_price_by_name] Search failed for {symbol}: {e}")
 
-    print(f"[get_stock_price_by_name] ❌ All strategies failed for {short_name}")
+    print(f"[get_stock_price_by_name] ❌ All strategies failed for {symbol}")
     return None
