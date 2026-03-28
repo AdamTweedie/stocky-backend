@@ -6,12 +6,13 @@ from db import (get_stocks_by_search,
                 get_stock_by_short_name,
                 get_stocks_by_filter,
                 get_popular_stocks, 
-                get_quote_by_symbol
+                get_quote_by_symbol,
+                is_free,
                 )
 from jobs import update_single_stock_price, get_or_fetch_quote
 
 
-router = APIRouter(prefix="/stocks")
+router = APIRouter(prefix="/stocks", tags=["Stocks"])
 
 
 class StockResponse(BaseModel):
@@ -74,6 +75,12 @@ def get_popular_stocks_route():
 def get_free_stocks():
     raw = get_stocks_by_filter(inFreeTier=True)
     return StockListResponse(results=[db_to_stock(s) for s in raw])
+
+
+@router.get("/is_free")
+def search_stocks(q: str = Query(..., min_length=1)):
+    free = is_free(q)
+    return {"is_free":f"{free}"}
 
 
 @router.get("/search", response_model=StockListResponse)

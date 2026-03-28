@@ -13,7 +13,7 @@ import time
 from mappings import is_market_open, currency_exchange_suffix
 
 
-def fetch_price_with_fallback(short_name: str, currency_code: str, type: str = "STOCK") -> dict | None:
+def fetch_price_with_fallback(short_name: str, currency_code: str, long_name: str = None, type: str = "STOCK") -> dict | None:
     
     print(f"[fetch_price_with_fallback] {short_name}")
 
@@ -26,7 +26,7 @@ def fetch_price_with_fallback(short_name: str, currency_code: str, type: str = "
 
     # 2. try yfinance
     print(f"[fetch_price_with_fallback] AV failed for {short_name}, trying yfinance...")
-    price_dict = get_stock_price_yf(symbol=short_name, currency_code=currency_code)
+    price_dict = get_stock_price_yf(symbol=short_name, name=long_name, currency_code=currency_code)
     if price_dict is not None:
         return price_dict
 
@@ -97,9 +97,9 @@ def update_stock_prices() -> dict:
             print("[update_stock_prices] AV rate limited, switching to 1 req/sec and using fallbacks")
             delay = 1
             time.sleep(delay)
-            price_dict = fetch_price_with_fallback(short_name, stock["currency_code"], stock["type"])
+            price_dict = fetch_price_with_fallback(short_name, stock["currency_code"], stock["name"], stock["type"])
         elif price_dict is None:
-            price_dict = fetch_price_with_fallback(short_name, stock["currency_code"], stock["type"])
+            price_dict = fetch_price_with_fallback(short_name, stock["currency_code"],  stock["name"], stock["type"])
 
         if price_dict is None:
             failed.append(short_name)
@@ -126,7 +126,7 @@ def update_single_stock_price(short_name: str) -> dict:
         print(f"[update_single_stock_price] Stock {short_name} not found in db")
         return {"success": False, "short_name": short_name, "price": None, "price_change": None, "price_change_percent": None}
 
-    price_dict = fetch_price_with_fallback(short_name, stock["currency_code"], stock["type"])
+    price_dict = fetch_price_with_fallback(short_name, stock["currency_code"], stock["name"], stock["type"])
 
     if price_dict is None:
         print(f"[update_single_stock_price] All sources failed for {short_name}")

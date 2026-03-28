@@ -6,7 +6,8 @@ from jobs import run_refresh_stocks, run_refresh_news, update_free_stocks, updat
 from db import create_tables
 from services import fetch_rss_news
 from routes.news import router as news_router
-# from routes.users import router as users_router
+from routes.auth import router as auth_router
+from routes.users import router as users_router
 import uvicorn
 
 app = FastAPI()
@@ -21,7 +22,8 @@ app.add_middleware(
 
 app.include_router(stocks_router)
 app.include_router(news_router)
-# app.include_router(users_router)
+app.include_router(auth_router)
+app.include_router(users_router)
 
 if __name__ == "__main__":
     #create_tables()

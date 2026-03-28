@@ -13,6 +13,7 @@ from .stocks import (
     bulk_update_stock_prices,
     get_stocks_by_search,
     get_quote_by_symbol,
+    is_free,
 )
 
 from .aggregate_sentiment import (
@@ -37,10 +38,13 @@ from .news import (
     get_news_by_id,
 )
 
+from .stock_ai_summary import insert_stock_summary, get_latest_stock_summary
+
 from .users import (
     create_user_email,
     create_user_google,
     login_email,
+    login_google,
     get_user_by_session,
     logout,
     get_user_by_id,

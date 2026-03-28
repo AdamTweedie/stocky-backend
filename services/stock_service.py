@@ -140,7 +140,7 @@ def get_stock_price_spd(symbol: str, currency_code: str, type: str = "STOCK") ->
         return None
 
 
-def get_stock_price_yf(symbol: str, currency_code: str, type: str = "STOCK") -> dict | None:
+def get_stock_price_yf(symbol: str, name: str, currency_code: str = None, type: str = "STOCK") -> dict | None:
     """
     Search for a stock price using yfinance search — no exact ticker needed.
     Falls back through multiple search strategies.

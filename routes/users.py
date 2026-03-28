@@ -23,7 +23,7 @@ from db import (
 from dependencies import get_current_active_user
 import bcrypt
 
-router = APIRouter(prefix="/user")
+router = APIRouter(prefix="/user", tags=["Users"])
 
 
 # ─────────────────────────────────────────
@@ -177,6 +177,7 @@ def add_to_watchlist(
         raise HTTPException(status_code=409, detail="Stock already in watchlist")
 
     return {"ok": True}
+
 
 
 @router.delete("/watchlist/{short_name}")

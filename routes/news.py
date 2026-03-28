@@ -1,12 +1,15 @@
 # routes/stocks.py
-from fastapi import APIRouter, Query, Depends
+from fastapi import APIRouter, HTTPException, Query, Depends
 from pydantic import BaseModel
 from typing import List, Optional
-from db import get_news_by_short_name, get_news_by_id
-from services import summarise_article
+from db import get_news_by_short_name, get_news_by_id, is_free, get_user_by_id
+from services import summarise_article, summarise_recent_news
 from jobs import update_ai_summary
+from dependencies import get_current_active_user, require_pro
+from db import insert_stock_summary, get_latest_stock_summary, increment_ai_tokens
 
-router = APIRouter(prefix="/news")
+
+router = APIRouter(prefix="/news", tags=["News"])
 
 class NewsResponse(BaseModel):
     # NOT NULL in db - always present
@@ -48,12 +51,29 @@ def db_to_news(item: dict) -> NewsResponse:
     )
 
 
-@router.get("/symbol", response_model=NewsListResponse)
+@router.get("/symbol_free", response_model=NewsListResponse)
 def get_news_by_symbol(
     q: str = Query(...),
     since: str = Query(None)  # ISO 8601 timestamp e.g. "2026-03-22T10:00:00"
     ):
 
+    symbols = [s.strip() for s in q.split(",")]
+    news = []
+    for sym in symbols:
+        if not is_free(sym):
+            continue
+        items = get_news_by_short_name(short_name=sym, since=since)
+        for item in items:
+            news.append(db_to_news(item))
+    return NewsListResponse(results=news)
+
+
+@router.get("/symbol_premium")
+def get_news_by_symbol_premium(
+    q: str = Query(...),
+    since: str = Query(None),
+    user: dict = Depends(require_pro)  # handles tier check automatically
+):
     symbols = [s.strip() for s in q.split(",")]
     news = []
     for sym in symbols:
@@ -63,9 +83,10 @@ def get_news_by_symbol(
     return NewsListResponse(results=news)
 
 
-@router.get("/ai_summary", response_model=NewsListResponse)
+@router.get("/article_ai_summary", response_model=NewsListResponse)
 def get_ai_summary_by_news_id(
-    q: str = Query(...)):
+    q: str = Query(...),
+    user: dict = Depends(require_pro)):
 
     ids = [int(i.strip()) for i in q.split(",")]
 
@@ -90,4 +111,40 @@ def get_ai_summary_by_news_id(
 
             
     return NewsListResponse(results=news)
+
+
+from db import insert_stock_summary, get_latest_stock_summary
+from datetime import datetime, timezone, timedelta
+
+
+@router.get("/stock_ai_summary")
+def get_stock_ai_summary(
+    q: str = Query(...),
+    days: int = Query(3),
+    user: dict = Depends(require_pro)
+):
+    # check if we already have a recent summary (within last 24 hours)
+    existing = get_latest_stock_summary(q)
+    if existing:
+        age = datetime.now(timezone.utc) - datetime.fromisoformat(existing["created_at"])
+        if age < timedelta(hours=24):
+            print(f"[get_stock_ai_summary] Returning cached summary for {q}")
+            return existing
+
+    # generate new summary
+    result = summarise_recent_news(short_name=q, days=days)
+    if result is None:
+        raise HTTPException(status_code=404, detail=f"No recent news found for {q}")
+
+    # store in db and track token usage
+    insert_stock_summary(
+        short_name=q,
+        ai_summary=result["summary"],
+        tokens_total=result["tokens_in"] + result["tokens_out"],
+        days=days
+    )
+    increment_ai_tokens(user["id"], result["tokens_in"] + result["tokens_out"])
+
+    return result
+
 

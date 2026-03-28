@@ -213,6 +213,7 @@ def update_ai_summary_by_short_name(short_name: str, ai_summary: str) -> int:
         return cursor.rowcount
 
 
+
 # ----------- DELETE --------------
 def delete_news_older_than(cutoff_date: str) -> int:
     """

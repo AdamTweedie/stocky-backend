@@ -122,6 +122,17 @@ def create_tables():
                 UNIQUE(user_id, industry)                       -- prevent duplicate follows
             )
         """)
+        conn.execute("""
+            CREATE TABLE IF NOT EXISTS stock_ai_summaries (
+                id            INTEGER PRIMARY KEY AUTOINCREMENT,
+                created_at    TEXT NOT NULL DEFAULT (strftime('%Y-%m-%dT%H:%M:%fZ', 'now')),
+                short_name    TEXT NOT NULL,
+                ai_summary    TEXT NOT NULL,
+                tokens_total  INTEGER NOT NULL,
+                days          INTEGER NOT NULL DEFAULT 3
+            )
+        """)
+
 
         conn.commit()
 

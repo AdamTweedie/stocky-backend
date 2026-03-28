@@ -61,6 +61,12 @@ def get_stock_by_short_name(short_name: str) -> Optional[dict]:
         return dict(row) if row else None
     
 
+def is_free(short_name: str) -> True | False:
+    with get_connection() as conn:
+        tier = conn.execute("SELECT in_free_tier FROM stocks WHERE short_name = ?", (short_name,)).fetchone()
+        return bool(dict(tier).get("in_free_tier")) if tier else None
+    
+    
 def get_stocks_by_filter(
     type: str = None,
     industry: str = None,

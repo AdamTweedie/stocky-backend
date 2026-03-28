@@ -1,6 +1,7 @@
 # routes/auth.py
 from fastapi import APIRouter, HTTPException, Depends
 from fastapi.responses import RedirectResponse
+from fastapi.security import OAuth2PasswordRequestForm
 from pydantic import BaseModel
 from typing import Optional
 from db import (
@@ -16,7 +17,7 @@ from db import (
 from config import stocky_host
 from dependencies import get_current_active_user
 
-router = APIRouter(prefix="/auth")
+router = APIRouter(prefix="/auth", tags=["Auth"])
 
 HOST = stocky_host()
 
@@ -64,11 +65,11 @@ def register(body: RegisterRequest):
 
 
 @router.post("/login")
-def login(body: LoginRequest):
-    token = login_email(body.email, body.password)
+def login(form_data: OAuth2PasswordRequestForm = Depends()):
+    token = login_email(form_data.username, form_data.password)
     if token is None:
         raise HTTPException(status_code=401, detail="Invalid email or password")
-    return {"ok": True, "session_token": token}
+    return {"access_token": token, "token_type": "bearer"}
 
 
 @router.post("/logout")
