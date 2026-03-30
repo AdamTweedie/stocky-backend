@@ -80,6 +80,10 @@ stocky-backend/
 ### 1. Clone the repository
 
 ```bash
+pip install poetry
+```
+
+```bash
 git clone https://github.com/yourusername/stocky-backend.git
 cd stocky-backend
 ```
@@ -99,7 +103,7 @@ source .venv/bin/activate
 ### 3. Install dependencies
 
 ```bash
-pip install -r requirements.txt
+poetry install
 ```
 
 ### 4. Configure environment variables
@@ -117,13 +121,13 @@ GOOGLE_CLIENT_SECRET=your_google_client_secret
 ### 5. Initialise the database
 
 ```bash
-python -m db.connection
+poetry run python -m db.connection
 ```
 
 ### 6. Run the API
 
 ```bash
-python main.py
+poetry run python main.py
 ```
 
 API will be available at `http://127.0.0.1:5000`
@@ -133,7 +137,7 @@ Swagger UI docs at `http://127.0.0.1:5000/docs`
 ### 7. Run the scheduler (separate terminal)
 
 ```bash
-python scheduler.py
+poetry run python scheduler.py
 ```
 
 ---
