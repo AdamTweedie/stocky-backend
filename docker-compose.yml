@@ -1,0 +1,24 @@
+services:
+  api:
+    build: .
+    container_name: stocky_api
+    ports:
+      - "5000:5000"
+    env_file:
+      - .env
+    volumes:
+      - ./stocky.db:/app/stocky.db
+    restart: unless-stopped
+
+  scheduler:
+    build: .
+    container_name: stocky_scheduler
+    command: python scheduler.py
+    env_file:
+      - .env
+    volumes:
+      - ./stocky.db:/app/stocky.db
+    restart: unless-stopped
+    depends_on:
+      - api
+    
