@@ -1,7 +1,3 @@
-"""
-    TODO: import and use 'accelerate'
-"""
-
 from transformers import pipeline
 import torch
 
