@@ -15,7 +15,6 @@ COPY poetry.lock pyproject.toml ./
 # Docker is already isolated
 RUN poetry config virtualenvs.create false 
 
-
 RUN poetry install --no-root
 
 # Copy application code
