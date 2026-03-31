@@ -18,11 +18,19 @@ def fetch_price_with_fallback(short_name: str, currency_code: str, long_name: st
     print(f"[fetch_price_with_fallback] {short_name}")
 
     # 1. try Alpha Vantage
-    price_dict = get_stock_price_av(symbol=short_name, currency_code=currency_code)
-    if price_dict == "REDUCE_RATE_TO_1_PER_SECOND":
-        print(f"[fetch_price_with_fallback] AV rate limited, trying yfinance...")
-    elif price_dict is not None:
-        return price_dict
+    av_not_none = True
+    delay = 0
+    if delay > 0:
+        time.sleep(delay)
+    while av_not_none:
+        price_dict = get_stock_price_av(symbol=short_name, currency_code=currency_code)
+        if price_dict == "REDUCE_RATE_TO_1_PER_SECOND":
+            delay = 1
+        elif price_dict is not None:
+            return price_dict
+        else:
+            av_not_none = False
+            print(f"[fetch_price_with_fallback] AV rate limited, trying yfinance...")
 
     # 2. try yfinance
     print(f"[fetch_price_with_fallback] AV failed for {short_name}, trying yfinance...")
@@ -91,15 +99,7 @@ def update_stock_prices() -> dict:
             print(f"[update_stock_prices] Market closed for {short_name}, skipping")
             continue
 
-        # try AV first, handle rate limit
-        price_dict = get_stock_price_av(symbol=short_name)
-        if price_dict == "REDUCE_RATE_TO_1_PER_SECOND":
-            print("[update_stock_prices] AV rate limited, switching to 1 req/sec and using fallbacks")
-            delay = 1
-            time.sleep(delay)
-            price_dict = fetch_price_with_fallback(short_name, stock["currency_code"], stock["name"], stock["type"])
-        elif price_dict is None:
-            price_dict = fetch_price_with_fallback(short_name, stock["currency_code"],  stock["name"], stock["type"])
+        price_dict = fetch_price_with_fallback(short_name, stock["currency_code"], stock["name"], stock["type"])
 
         if price_dict is None:
             failed.append(short_name)
