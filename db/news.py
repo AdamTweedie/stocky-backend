@@ -78,6 +78,16 @@ def get_news_by_title(title: str) -> Optional[dict]:
             "SELECT * FROM news WHERE title = ?", (title,)
         ).fetchone()
         return dict(row) if row else None
+    
+
+def get_title_and_descriptions_from_ids(ids:list[int]) -> Optional[list[dict]]:
+    placeholders = ",".join("?" * len(ids))
+    with get_connection() as conn:
+        rows = conn.execute(
+            f"SELECT id, title, description FROM news WHERE id IN ({placeholders})",
+            ids
+        ).fetchall()
+        return [dict(row) for row in rows]
 
 
 def get_news_by_recency(limit: int = 10) -> list[dict]:
@@ -185,16 +195,19 @@ def update_news_by_title(title: str, **fields) -> bool:
         )
         conn.commit()
         return cursor.rowcount > 0
+    
 
-
-def update_sentiment_by_short_name(short_name: str, sentiment: float) -> int:
+def bulk_update_sentiment_by_id(article_scores: dict) -> int:
     """
-    Bulk update sentiment for all news items belonging to a symbol.
+    Bulk update the sentiment of news articles by id.
     Returns the number of rows updated.
     """
+    updates = [(score, id) for id, score in article_scores.items()]
+    
     with get_connection() as conn:
-        cursor = conn.execute(
-            "UPDATE news SET sentiment = ? WHERE short_name = ?", (sentiment, short_name)
+        cursor = conn.executemany(
+            "UPDATE news SET sentiment = ? WHERE id = ?",
+            updates
         )
         conn.commit()
         return cursor.rowcount

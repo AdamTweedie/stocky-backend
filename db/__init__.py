@@ -35,7 +35,9 @@ from .news import (
     update_ai_summary_by_short_name,
     delete_news_older_than,
     get_news_by_source_type,
+    bulk_update_sentiment_by_id,
     get_news_by_id,
+    get_title_and_descriptions_from_ids,
 )
 
 from .stock_ai_summary import insert_stock_summary, get_latest_stock_summary
