@@ -2,7 +2,7 @@ from transformers import pipeline
 import torch
 from vaderSentiment.vaderSentiment import SentimentIntensityAnalyzer
 
-# TODO: Also include vaderSentiment for more informal language (maybe....)
+VADER_FALLBACK_THRESHOLD = 0.5
 
 _classifier = None
 
@@ -39,7 +39,7 @@ def _label(result, text):
         return -round(score, 3)
     else:
         vader_score = get_vader_sentiment_compound_score(text)
-        return vader_score if abs(vader_score) > 0.5 else 0
+        return vader_score if abs(vader_score) > VADER_FALLBACK_THRESHOLD else 0
 
 
 def get_sentiment(text: str) -> float:

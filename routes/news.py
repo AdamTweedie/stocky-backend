@@ -7,6 +7,7 @@ from services import summarise_article, summarise_recent_news
 from jobs import update_ai_summary
 from dependencies import get_current_active_user, require_pro
 from db import insert_stock_summary, get_latest_stock_summary, increment_ai_tokens
+from datetime import datetime, timezone, timedelta
 
 
 router = APIRouter(prefix="/news", tags=["News"])
@@ -31,6 +32,16 @@ class NewsResponse(BaseModel):
 
 class NewsListResponse(BaseModel):
     results: List[NewsResponse]
+
+
+class AiArticleResponse(BaseModel):
+    id: int
+    ai_summary: str
+
+
+class AiStockSummaryResponse(BaseModel):
+    symbol: str
+    ai_summary: str
 
 
 def db_to_news(item: dict) -> NewsResponse:
@@ -83,68 +94,66 @@ def get_news_by_symbol_premium(
     return NewsListResponse(results=news)
 
 
-@router.get("/article_ai_summary", response_model=NewsListResponse)
-def get_ai_summary_by_news_id(
-    q: str = Query(...),
-    user: dict = Depends(require_pro)):
+@router.get("/article_ai_summary/{id}", response_model=AiArticleResponse)
+def get_ai_summary_by_news_id(id: int):
 
-    ids = [int(i.strip()) for i in q.split(",")]
+    article = get_news_by_id(id)
+    if not article:
+        
+        raise HTTPException(status_code=404, detail="Article not found")
 
-    news = []
-    for id in ids:
-        article = get_news_by_id(id)
-        curr_summary = article["AI_summary"]
-        if curr_summary is not None:
-            news.append(article)
-        else:
-            if update_ai_summary(
-                news_id = article["id"],
-                stock_short_name=article["short_name"],
-                news_url=article["url"],
-                news_description=article["description"]
-            ) is not None:
-                article = get_news_by_id(id)
-                news.append(article)
-            else:
-                #TODO: should handle error?
-                continue
+    if article["AI_summary"] is not None:
+        #increment_ai_tokens(user["id"], ai_summary["tokens_in"] + ai_summary["tokens_out"])
+        return AiArticleResponse(id=article["id"], ai_summary=article["AI_summary"])
 
-            
-    return NewsListResponse(results=news)
+    ai_summary = update_ai_summary(
+        news_id=article["id"],
+        stock_short_name=article["short_name"],
+        news_url=article["url"],
+        news_title=article["title"],
+        news_description=article["description"]
+    )
+
+    if ai_summary is None:
+        raise HTTPException(status_code=500, detail="Failed to generate AI summary")
+    
+    #increment_ai_tokens(user["id"], ai_summary["tokens_in"] + ai_summary["tokens_out"])
+
+    return AiArticleResponse(id=ai_summary["id"], ai_summary=ai_summary["ai_summary"])
 
 
-from db import insert_stock_summary, get_latest_stock_summary
-from datetime import datetime, timezone, timedelta
-
-
-@router.get("/stock_ai_summary")
+@router.get("/stock_ai_summary/{stock}", response_model=AiStockSummaryResponse)
 def get_stock_ai_summary(
-    q: str = Query(...),
-    days: int = Query(3),
-    user: dict = Depends(require_pro)
+    stock: str,
+    days: int = Query(7)
 ):
+    """
+        A better way to implement this is to check if there has been new news since the previous summary.
+        This will require storing the number of articles used / which articles were used in the stock_ai_summary table
+    """
     # check if we already have a recent summary (within last 24 hours)
-    existing = get_latest_stock_summary(q)
+    # TODO: if no new news < 24 hours, then we also do not need to re-summarise
+    existing = get_latest_stock_summary(stock)
     if existing:
         age = datetime.now(timezone.utc) - datetime.fromisoformat(existing["created_at"])
         if age < timedelta(hours=24):
-            print(f"[get_stock_ai_summary] Returning cached summary for {q}")
-            return existing
+            print(f"[get_stock_ai_summary] Returning cached summary for {stock}")
+            return AiStockSummaryResponse(symbol=existing["short_name"], ai_summary=existing["ai_summary"])
 
     # generate new summary
-    result = summarise_recent_news(short_name=q, days=days)
+    result = summarise_recent_news(short_name=stock, days=days)
     if result is None:
-        raise HTTPException(status_code=404, detail=f"No recent news found for {q}")
+        raise HTTPException(status_code=404, detail=f"No recent news found for {stock}")
 
     # store in db and track token usage
     insert_stock_summary(
-        short_name=q,
+        short_name=stock,
         ai_summary=result["summary"],
         tokens_total=result["tokens_in"] + result["tokens_out"],
         days=days
     )
-    increment_ai_tokens(user["id"], result["tokens_in"] + result["tokens_out"])
+    #increment_ai_tokens(user["id"], result["tokens_in"] + result["tokens_out"])
 
-    return result
+    return AiStockSummaryResponse(symbol=result["short_name"], ai_summary=result["ai_summary"])
 
 

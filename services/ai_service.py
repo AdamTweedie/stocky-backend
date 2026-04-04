@@ -126,7 +126,7 @@ def summarise_recent_news(short_name: str, days: int = 3) -> dict | None:
         return {
             "short_name":     short_name,
             "articles_used":  len(recent),
-            "summary":        summary,
+            "ai_summary":     summary,
             "tokens_in":      tokens_in,
             "tokens_out":     tokens_out,
         }
