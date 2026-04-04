@@ -23,7 +23,8 @@ dependencies = [
     "python-multipart (>=0.0.22,<0.0.23)",
     "transformers (>=5.4.0,<6.0.0)",
     "torch (>=2.11.0,<3.0.0)",
-    "accelerate (>=1.13.0,<2.0.0)"
+    "accelerate (>=1.13.0,<2.0.0)",
+    "vadersentiment (>=3.3.2,<4.0.0)"
 ]
 
 

@@ -1,5 +1,8 @@
 from transformers import pipeline
 import torch
+from vaderSentiment.vaderSentiment import SentimentIntensityAnalyzer
+
+# TODO: Also include vaderSentiment for more informal language (maybe....)
 
 _classifier = None
 
@@ -20,7 +23,13 @@ def _get_classifier():
     return _classifier
 
 
-def _label(result):
+_vader = SentimentIntensityAnalyzer()
+def get_vader_sentiment_compound_score(text: str) -> float:
+    sentiment_dict = _vader.polarity_scores(text)
+    return sentiment_dict["compound"]
+
+
+def _label(result, text):
     label = result["label"]
     score = result["score"]
 
@@ -29,18 +38,19 @@ def _label(result):
     elif label == "negative":
         return -round(score, 3)
     else:
-        return 0
+        vader_score = get_vader_sentiment_compound_score(text)
+        return vader_score if abs(vader_score) > 0.5 else 0
 
 
 def get_sentiment(text: str) -> float:
     print(f"[get_sentiment] calculating sentiment for 1 article")
     result = _get_classifier()(text)[0]
-    return _label(result)
+    return _label(result, text)
 
 
 def get_bulk_sentiment(texts: list[str]) -> list[float]:
     print(f"[get_bulk_sentiment] calculating sentiment for {len(texts)} articles")
     results = _get_classifier()(texts)
-    return [_label(r) for r in results] 
+    return [_label(r, texts[i]) for i, r in enumerate(results)] 
 
 

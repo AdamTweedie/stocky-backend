@@ -2942,6 +2942,21 @@ h11 = ">=0.8"
 standard = ["colorama (>=0.4) ; sys_platform == \"win32\"", "httptools (>=0.6.3)", "python-dotenv (>=0.13)", "pyyaml (>=5.1)", "uvloop (>=0.15.1) ; sys_platform != \"win32\" and sys_platform != \"cygwin\" and platform_python_implementation != \"PyPy\"", "watchfiles (>=0.20)", "websockets (>=10.4)"]
 
 [[package]]
+name = "vadersentiment"
+version = "3.3.2"
+description = "VADER Sentiment Analysis. VADER (Valence Aware Dictionary and sEntiment Reasoner) is a lexicon and rule-based sentiment analysis tool that is specifically attuned to sentiments expressed in social media, and works well on texts from other domains."
+optional = false
+python-versions = "*"
+groups = ["main"]
+files = [
+    {file = "vaderSentiment-3.3.2-py2.py3-none-any.whl", hash = "sha256:3bf1d243b98b1afad575b9f22bc2cb1e212b94ff89ca74f8a23a588d024ea311"},
+    {file = "vaderSentiment-3.3.2.tar.gz", hash = "sha256:5d7c06e027fc8b99238edb0d53d970cf97066ef97654009890b83703849632f9"},
+]
+
+[package.dependencies]
+requests = "*"
+
+[[package]]
 name = "websockets"
 version = "16.0"
 description = "An implementation of the WebSocket Protocol (RFC 6455 & 7692)"
@@ -3045,4 +3060,4 @@ repair = ["scipy (>=1.6.3)"]
 [metadata]
 lock-version = "2.1"
 python-versions = ">=3.12,<3.15"
-content-hash = "4a615a29a18265a21441aff470bde028059cb526938ef7958a30ad7eefd44d6e"
+content-hash = "96d24b6a52ef4de3d7b4eea0c0a6482081eed2c0e3957159ba6f6958da4f8210"
