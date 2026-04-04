@@ -135,8 +135,3 @@ def create_tables():
 
 
         conn.commit()
-
-
-if __name__ == "__main__":
-    
-    create_tables() # initialise db

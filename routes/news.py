@@ -148,7 +148,7 @@ def get_stock_ai_summary(
     # store in db and track token usage
     insert_stock_summary(
         short_name=stock,
-        ai_summary=result["summary"],
+        ai_summary=result["ai_summary"],
         tokens_total=result["tokens_in"] + result["tokens_out"],
         days=days
     )
