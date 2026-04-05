@@ -85,5 +85,7 @@ def run_refresh_news():
 
 
     print(f"[refresh_news] ✅ Inserted: {success} | ⏭️ Skipped (duplicate): {skipped} | ❌ Failed (no data): {failed}")
-    if sents:
+    if sents is not None:
         print(f"[refresh_news] Inserted sentiment for {sents}/{success+skipped+failed} articles!")
+
+
