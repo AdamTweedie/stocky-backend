@@ -64,12 +64,19 @@ def register(body: RegisterRequest):
     return {"ok": True, "session_token": token}
 
 
+# @router.post("/login")
+# def login(form_data: OAuth2PasswordRequestForm = Depends()):
+#     token = login_email(form_data.username, form_data.password)
+#     if token is None:
+#         raise HTTPException(status_code=401, detail="Invalid email or password")
+#     return {"access_token": token, "token_type": "bearer"}
+
 @router.post("/login")
-def login(form_data: OAuth2PasswordRequestForm = Depends()):
-    token = login_email(form_data.username, form_data.password)
+def login(body: LoginRequest):  # use the JSON model instead of OAuth2PasswordRequestForm
+    token = login_email(body.email, body.password)
     if token is None:
         raise HTTPException(status_code=401, detail="Invalid email or password")
-    return {"access_token": token, "token_type": "bearer"}
+    return {"ok": True, "session_token": token}
 
 
 @router.post("/logout")
