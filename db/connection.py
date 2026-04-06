@@ -85,7 +85,7 @@ def create_tables():
             last_login_at         TEXT,
 
             -- Tier & subscription
-            tier                  TEXT NOT NULL DEFAULT 'free' CHECK(tier IN ('free', 'pro', 'enterprise')),
+            tier                  TEXT NOT NULL DEFAULT 'free' CHECK(tier IN ('free', 'basic', 'pro')),
             tier_status           TEXT NOT NULL DEFAULT 'active' CHECK(tier_status IN ('active', 'cancelled', 'past_due', 'paused')),
             subscription_id       TEXT UNIQUE,          -- Stripe/payment provider subscription ID
             subscription_start    TEXT,

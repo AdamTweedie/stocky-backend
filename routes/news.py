@@ -99,7 +99,6 @@ def get_ai_summary_by_news_id(id: int):
 
     article = get_news_by_id(id)
     if not article:
-        
         raise HTTPException(status_code=404, detail="Article not found")
 
     if article["AI_summary"] is not None:

@@ -21,6 +21,7 @@ from db import (
     get_stock_by_short_name,
 )
 from dependencies import get_current_active_user
+from .stocks import StockListResponse, db_to_stock
 import bcrypt
 
 router = APIRouter(prefix="/user", tags=["Users"])
@@ -146,9 +147,14 @@ def get_tokens(user: dict = Depends(get_current_active_user)):
 # WATCHLIST
 # ─────────────────────────────────────────
 
-@router.get("/watchlist")
+@router.get("/watchlist", response_model=StockListResponse)
 def get_watchlist(user: dict = Depends(get_current_active_user)):
-    return {"results": get_followed_stocks(user["id"])}
+    user_follows = get_followed_stocks(user["id"])
+    stocks = []
+    for stock in user_follows:
+        stock = get_stock_by_short_name(stock["short_name"])
+        stocks.append(stock)
+    return StockListResponse(results=[db_to_stock(s) for s in stocks])
 
 
 @router.post("/watchlist")
@@ -177,7 +183,6 @@ def add_to_watchlist(
         raise HTTPException(status_code=409, detail="Stock already in watchlist")
 
     return {"ok": True}
-
 
 
 @router.delete("/watchlist/{short_name}")

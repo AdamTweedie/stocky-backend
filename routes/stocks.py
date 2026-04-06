@@ -109,3 +109,6 @@ def get_quotes(q: str = Query(...)):
 
     return QuoteListResponse(results=quotes)
 
+
+
+

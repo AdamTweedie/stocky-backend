@@ -30,6 +30,7 @@ class RegisterRequest(BaseModel):
     email: str
     name: str
     password: str
+    tier: str
 
 
 class LoginRequest(BaseModel):
@@ -55,14 +56,14 @@ def register(body: RegisterRequest):
     user_id = create_user_email(
         email=body.email,
         name=body.name,
-        password=body.password
+        password=body.password,
+        tier=body.tier
     )
     if user_id is None:
         raise HTTPException(status_code=409, detail="Email already registered")
 
     token = login_email(body.email, body.password)
     return {"ok": True, "session_token": token}
-
 
 # @router.post("/login")
 # def login(form_data: OAuth2PasswordRequestForm = Depends()):

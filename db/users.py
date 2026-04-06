@@ -13,6 +13,7 @@ def create_user_email(
     email: str,
     name: str,
     password: str,
+    tier: str,
 ) -> int | None:
     """Register a new user with email/password. Returns new id or None if email exists."""
     with get_connection() as conn:
@@ -22,9 +23,9 @@ def create_user_email(
 
         password_hash = bcrypt.hashpw(password.encode(), bcrypt.gensalt()).decode()
         cursor = conn.execute("""
-            INSERT INTO users (email, name, password_hash)
-            VALUES (?, ?, ?)
-        """, (email, name, password_hash))
+            INSERT INTO users (email, name, password_hash, tier)
+            VALUES (?, ?, ?, ?)
+        """, (email, name, password_hash, tier))
         conn.commit()
         return cursor.lastrowid
 

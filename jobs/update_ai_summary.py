@@ -19,9 +19,6 @@ def update_ai_summary(news_id: int, stock_short_name: str, news_url: str, news_t
         update_news_by_id(news_id=news_id, AI_summary=ai_summary)
 
         return {"id": news_id, "ai_summary": ai_summary, "tokens_in": tokens_in, "tokens_out": tokens_out}
-
-        #TODO: update user token usage
-
     
     except Exception as e:
         print(f"[update_ai_summary] error updating AI summary for {news_id}: {e}")
