@@ -32,7 +32,7 @@ def summarise_article(
     if get_news_by_id(news_id)["AI_summary"] is not None:
         print(f"[summarise_article] AI_summary already exists for news id {news_id}")
         return None
-    if not title or not description:
+    if not title and not description:
         print(f"[summarise_article] No title or description provided for news_id {news_id}")
         return None
     elif not url:
