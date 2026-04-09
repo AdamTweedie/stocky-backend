@@ -65,9 +65,9 @@ def run_refresh_news():
                 print(f"[refresh_news] No data found for {stock_symbol} via API or RSS")
                 failed += 1
 
-    
-    
     if len(article_ids) > 0:
+        # TODO: remove this completely and run it separately, so we can catch missed articles
+        # TODO: we should do more to garuntee the correct sentiment is assigned to each id
         scores, texts = [], []
         results = get_title_and_descriptions_from_ids(article_ids)
         
@@ -79,13 +79,17 @@ def run_refresh_news():
         
         scores = get_bulk_sentiment(texts=texts)
 
-        article_scores = {id: score for id, score in zip(results, scores)}
+        article_scores = {
+            r["id"]: score
+            for r, score in zip(results, scores)
+        }
 
         sents = bulk_update_sentiment_by_id(article_scores=article_scores)
+        print(f"[refresh_news] Inserted sentiment for {sents}/{success+skipped+failed} articles!")
 
 
     print(f"[refresh_news] ✅ Inserted: {success} | ⏭️ Skipped (duplicate): {skipped} | ❌ Failed (no data): {failed}")
-    if sents is not None:
-        print(f"[refresh_news] Inserted sentiment for {sents}/{success+skipped+failed} articles!")
+    
+        
 
 

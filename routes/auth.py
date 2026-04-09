@@ -21,7 +21,6 @@ router = APIRouter(prefix="/auth", tags=["Auth"])
 
 HOST = stocky_host()
 
-
 # ─────────────────────────────────────────
 # REQUEST MODELS
 # ─────────────────────────────────────────
